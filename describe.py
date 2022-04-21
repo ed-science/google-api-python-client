@@ -224,7 +224,7 @@ def method_params(doc):
             if pname is None:
                 return
             if "(required)" not in desc:
-                pname = pname + "=None"
+                pname = f"{pname}=None"
                 parameters.append(pname)
             else:
                 # required params should be put straight into sorted_parameters
@@ -291,7 +291,7 @@ def breadcrumbs(path, root_discovery):
         display = p
         if i == 0:
             display = root_discovery.get("title", display)
-        crumbs.append('<a href="{}.html">{}</a>'.format(prefix + p, display))
+        crumbs.append(f'<a href="{prefix + p}.html">{display}</a>')
         accumulated.append(p)
 
     return " . ".join(crumbs)
@@ -314,9 +314,10 @@ def document_collection(resource, path, root_discovery, discovery, css=CSS):
     html = [
         "<html><body>",
         css,
-        "<h1>%s</h1>" % breadcrumbs(path[:-1], root_discovery),
+        f"<h1>{breadcrumbs(path[:-1], root_discovery)}</h1>",
         "<h2>Instance Methods</h2>",
     ]
+
 
     # Which methods are for collections.
     for name in dir(resource):
@@ -362,13 +363,11 @@ def document_collection_recursive(resource, path, root_discovery, discovery):
 
     html = document_collection(resource, path, root_discovery, discovery)
 
-    f = open(os.path.join(FLAGS.dest, path + "html"), "w")
-    if sys.version_info.major < 3:
-        html = html.encode("utf-8")
+    with open(os.path.join(FLAGS.dest, f"{path}html"), "w") as f:
+        if sys.version_info.major < 3:
+            html = html.encode("utf-8")
 
-    f.write(html)
-    f.close()
-
+        f.write(html)
     for name in dir(resource):
         if (
             not name.startswith("_")
@@ -398,10 +397,10 @@ def document_api(name, version, uri):
         service = build(name, version)
         content = get_static_doc(name, version)
     except UnknownApiNameOrVersion as e:
-        print("Warning: {} {} found but could not be built.".format(name, version))
+        print(f"Warning: {name} {version} found but could not be built.")
         return
     except HttpError as e:
-        print("Warning: {} {} returned {}.".format(name, version, e))
+        print(f"Warning: {name} {version} returned {e}.")
         return
 
     discovery = json.loads(content)
@@ -409,7 +408,7 @@ def document_api(name, version, uri):
     version = safe_version(version)
 
     document_collection_recursive(
-        service, "{}_{}.".format(name, version), discovery, discovery
+        service, f"{name}_{version}.", discovery, discovery
     )
 
 
@@ -429,7 +428,7 @@ def document_api_from_discovery_document(uri):
     version = safe_version(discovery["version"])
 
     document_collection_recursive(
-        service, "{}_{}.".format(name, version), discovery, discovery
+        service, f"{name}_{version}.", discovery, discovery
     )
 
 
@@ -458,12 +457,12 @@ if __name__ == "__main__":
 
             markdown = []
             for api, versions in api_directory.items():
-                markdown.append("## %s" % api)
-                for version in versions:
-                    markdown.append(
-                        "* [%s](http://googleapis.github.io/google-api-python-client/docs/dyn/%s_%s.html)"
-                        % (version, api, safe_version(version))
-                    )
+                markdown.append(f"## {api}")
+                markdown.extend(
+                    f"* [{version}](http://googleapis.github.io/google-api-python-client/docs/dyn/{api}_{safe_version(version)}.html)"
+                    for version in versions
+                )
+
                 markdown.append("\n")
 
             with open("docs/dyn/index.md", "w") as f:

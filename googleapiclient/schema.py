@@ -102,7 +102,7 @@ class Schemas(object):
 
         if name in seen:
             # Do not fall into an infinite loop over recursive definitions.
-            return "# Object with schema name: %s" % name
+            return f"# Object with schema name: {name}"
         seen.append(name)
 
         if name not in self.pretty:
@@ -274,16 +274,16 @@ class _SchemaToStruct(object):
                 self.emit(line.rstrip())
         elif stype == "boolean":
             value = schema.get("default", "True or False")
-            self.emitEnd("%s," % str(value), schema.get("description", ""))
+            self.emitEnd(f"{str(value)},", schema.get("description", ""))
         elif stype == "string":
             value = schema.get("default", "A String")
             self.emitEnd('"%s",' % str(value), schema.get("description", ""))
         elif stype == "integer":
             value = schema.get("default", "42")
-            self.emitEnd("%s," % str(value), schema.get("description", ""))
+            self.emitEnd(f"{str(value)},", schema.get("description", ""))
         elif stype == "number":
             value = schema.get("default", "3.14")
-            self.emitEnd("%s," % str(value), schema.get("description", ""))
+            self.emitEnd(f"{str(value)},", schema.get("description", ""))
         elif stype == "null":
             self.emitEnd("None,", schema.get("description", ""))
         elif stype == "any":
@@ -296,7 +296,7 @@ class _SchemaToStruct(object):
             self.undent()
             self.emit("],")
         else:
-            self.emit("Unknown type! %s" % stype)
+            self.emit(f"Unknown type! {stype}")
             self.emitEnd("", "")
 
         self.string = "".join(self.value)

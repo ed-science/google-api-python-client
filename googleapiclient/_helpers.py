@@ -115,9 +115,7 @@ def positional(max_positional_args):
         @functools.wraps(wrapped)
         def positional_wrapper(*args, **kwargs):
             if len(args) > max_positional_args:
-                plural_s = ""
-                if max_positional_args != 1:
-                    plural_s = "s"
+                plural_s = "s" if max_positional_args != 1 else ""
                 message = (
                     "{function}() takes at most {args_max} positional "
                     "argument{plural} ({args_given} given)".format(
@@ -158,10 +156,8 @@ def parse_unique_urlencoded(content):
     params = {}
     for key, value in six.iteritems(urlencoded_params):
         if len(value) != 1:
-            msg = "URL-encoded content contains a repeated value:" "%s -> %s" % (
-                key,
-                ", ".join(value),
-            )
+            msg = f'URL-encoded content contains a repeated value:{key} -> {", ".join(value)}'
+
             raise ValueError(msg)
         params[key] = value[0]
     return params
@@ -205,7 +201,4 @@ def _add_query_parameter(url, name, value):
     Returns:
         Updated query parameter. Does not update the url if value is None.
     """
-    if value is None:
-        return url
-    else:
-        return update_query_params(url, {name: value})
+    return url if value is None else update_query_params(url, {name: value})
