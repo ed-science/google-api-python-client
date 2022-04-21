@@ -103,10 +103,7 @@ X_GOOG_RESOURCE_ID = "X-GOOG-RESOURCE-ID"
 
 
 def _upper_header_keys(headers):
-    new_headers = {}
-    for k, v in six.iteritems(headers):
-        new_headers[k.upper()] = v
-    return new_headers
+    return {k.upper(): v for k, v in six.iteritems(headers)}
 
 
 class Notification(object):
@@ -270,14 +267,14 @@ def notification_from_headers(channel, headers):
     channel_id = headers[X_GOOG_CHANNEL_ID]
     if channel.id != channel_id:
         raise errors.InvalidNotificationError(
-            "Channel id mismatch: %s != %s" % (channel.id, channel_id)
+            f"Channel id mismatch: {channel.id} != {channel_id}"
         )
-    else:
-        message_number = int(headers[X_GOOG_MESSAGE_NUMBER])
-        state = headers[X_GOOG_RESOURCE_STATE]
-        resource_uri = headers[X_GOOG_RESOURCE_URI]
-        resource_id = headers[X_GOOG_RESOURCE_ID]
-        return Notification(message_number, state, resource_uri, resource_id)
+
+    message_number = int(headers[X_GOOG_MESSAGE_NUMBER])
+    state = headers[X_GOOG_RESOURCE_STATE]
+    resource_uri = headers[X_GOOG_RESOURCE_URI]
+    resource_id = headers[X_GOOG_RESOURCE_ID]
+    return Notification(message_number, state, resource_uri, resource_id)
 
 
 @util.positional(2)
@@ -304,9 +301,7 @@ def new_webhook_channel(url, token=None, expiration=None, params=None):
         expiration_ms = (
             delta.microseconds / 1000 + (delta.seconds + delta.days * 24 * 3600) * 1000
         )
-        if expiration_ms < 0:
-            expiration_ms = 0
-
+        expiration_ms = max(expiration_ms, 0)
     return Channel(
         "web_hook",
         str(uuid.uuid4()),
